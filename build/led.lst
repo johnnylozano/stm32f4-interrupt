@@ -1,0 +1,166 @@
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccZcVMjq.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"led.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.LED_init,"ax",%progbits
+  20              		.align	1
+  21              		.global	LED_init
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	LED_init:
+  27              	.LFB130:
+  28              		.file 1 "Core/src/led.c"
+   1:Core/src/led.c **** #include "stm32f4xx.h"
+   2:Core/src/led.c **** #include "led.h"
+   3:Core/src/led.c **** 
+   4:Core/src/led.c **** #define GPIOAEN     (1U<<0)
+   5:Core/src/led.c **** #define PIN5        (1U<<5)
+   6:Core/src/led.c **** #define LED_PIN     PIN5
+   7:Core/src/led.c **** 
+   8:Core/src/led.c **** void LED_init(void)
+   9:Core/src/led.c **** {
+  29              		.loc 1 9 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  10:Core/src/led.c ****     /* Enable clock access to GPIOA */
+  11:Core/src/led.c ****     RCC->AHB1ENR |= GPIOAEN;
+  34              		.loc 1 11 5 view .LVU1
+  35              		.loc 1 11 18 is_stmt 0 view .LVU2
+  36 0000 074A     		ldr	r2, .L2
+  37 0002 136B     		ldr	r3, [r2, #48]
+  38 0004 43F00103 		orr	r3, r3, #1
+  39 0008 1363     		str	r3, [r2, #48]
+  12:Core/src/led.c **** 
+  13:Core/src/led.c ****     /* Set GPIOA as an output */
+  14:Core/src/led.c ****     GPIOA->MODER |= (1U<<10);
+  40              		.loc 1 14 5 is_stmt 1 view .LVU3
+  41              		.loc 1 14 18 is_stmt 0 view .LVU4
+  42 000a 064B     		ldr	r3, .L2+4
+  43 000c 1A68     		ldr	r2, [r3]
+  44 000e 42F48062 		orr	r2, r2, #1024
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccZcVMjq.s 			page 2
+
+
+  45 0012 1A60     		str	r2, [r3]
+  15:Core/src/led.c ****     GPIOA->MODER &= ~(1U<<11);
+  46              		.loc 1 15 5 is_stmt 1 view .LVU5
+  47              		.loc 1 15 18 is_stmt 0 view .LVU6
+  48 0014 1A68     		ldr	r2, [r3]
+  49 0016 22F40062 		bic	r2, r2, #2048
+  50 001a 1A60     		str	r2, [r3]
+  16:Core/src/led.c **** }
+  51              		.loc 1 16 1 view .LVU7
+  52 001c 7047     		bx	lr
+  53              	.L3:
+  54 001e 00BF     		.align	2
+  55              	.L2:
+  56 0020 00380240 		.word	1073887232
+  57 0024 00000240 		.word	1073872896
+  58              		.cfi_endproc
+  59              	.LFE130:
+  61              		.section	.text.LED_on,"ax",%progbits
+  62              		.align	1
+  63              		.global	LED_on
+  64              		.syntax unified
+  65              		.thumb
+  66              		.thumb_func
+  68              	LED_on:
+  69              	.LFB131:
+  17:Core/src/led.c **** 
+  18:Core/src/led.c **** void LED_on(void)
+  19:Core/src/led.c **** {
+  70              		.loc 1 19 1 is_stmt 1 view -0
+  71              		.cfi_startproc
+  72              		@ args = 0, pretend = 0, frame = 0
+  73              		@ frame_needed = 0, uses_anonymous_args = 0
+  74              		@ link register save eliminated.
+  20:Core/src/led.c ****     GPIOA->BSRR = LED_PIN;
+  75              		.loc 1 20 5 view .LVU9
+  76              		.loc 1 20 17 is_stmt 0 view .LVU10
+  77 0000 014B     		ldr	r3, .L5
+  78 0002 2022     		movs	r2, #32
+  79 0004 9A61     		str	r2, [r3, #24]
+  21:Core/src/led.c **** }
+  80              		.loc 1 21 1 view .LVU11
+  81 0006 7047     		bx	lr
+  82              	.L6:
+  83              		.align	2
+  84              	.L5:
+  85 0008 00000240 		.word	1073872896
+  86              		.cfi_endproc
+  87              	.LFE131:
+  89              		.section	.text.LED_off,"ax",%progbits
+  90              		.align	1
+  91              		.global	LED_off
+  92              		.syntax unified
+  93              		.thumb
+  94              		.thumb_func
+  96              	LED_off:
+  97              	.LFB132:
+  22:Core/src/led.c **** 
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccZcVMjq.s 			page 3
+
+
+  23:Core/src/led.c **** void LED_off(void)
+  24:Core/src/led.c **** {
+  98              		.loc 1 24 1 is_stmt 1 view -0
+  99              		.cfi_startproc
+ 100              		@ args = 0, pretend = 0, frame = 0
+ 101              		@ frame_needed = 0, uses_anonymous_args = 0
+ 102              		@ link register save eliminated.
+  25:Core/src/led.c ****     GPIOA->BSRR = (1U<<21);
+ 103              		.loc 1 25 5 view .LVU13
+ 104              		.loc 1 25 17 is_stmt 0 view .LVU14
+ 105 0000 024B     		ldr	r3, .L8
+ 106 0002 4FF40012 		mov	r2, #2097152
+ 107 0006 9A61     		str	r2, [r3, #24]
+  26:Core/src/led.c **** }
+ 108              		.loc 1 26 1 view .LVU15
+ 109 0008 7047     		bx	lr
+ 110              	.L9:
+ 111 000a 00BF     		.align	2
+ 112              	.L8:
+ 113 000c 00000240 		.word	1073872896
+ 114              		.cfi_endproc
+ 115              	.LFE132:
+ 117              		.text
+ 118              	.Letext0:
+ 119              		.file 2 "c:\\st\\stm32cubeclt\\gnu-tools-for-stm32\\arm-none-eabi\\include\\machine\\_default_type
+ 120              		.file 3 "c:\\st\\stm32cubeclt\\gnu-tools-for-stm32\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 121              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f411xe.h"
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccZcVMjq.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 led.c
+C:\Users\NITROU~1\AppData\Local\Temp\ccZcVMjq.s:20     .text.LED_init:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\ccZcVMjq.s:26     .text.LED_init:0000000000000000 LED_init
+C:\Users\NITROU~1\AppData\Local\Temp\ccZcVMjq.s:56     .text.LED_init:0000000000000020 $d
+C:\Users\NITROU~1\AppData\Local\Temp\ccZcVMjq.s:62     .text.LED_on:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\ccZcVMjq.s:68     .text.LED_on:0000000000000000 LED_on
+C:\Users\NITROU~1\AppData\Local\Temp\ccZcVMjq.s:85     .text.LED_on:0000000000000008 $d
+C:\Users\NITROU~1\AppData\Local\Temp\ccZcVMjq.s:90     .text.LED_off:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\ccZcVMjq.s:96     .text.LED_off:0000000000000000 LED_off
+C:\Users\NITROU~1\AppData\Local\Temp\ccZcVMjq.s:113    .text.LED_off:000000000000000c $d
+
+NO UNDEFINED SYMBOLS

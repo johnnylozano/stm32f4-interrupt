@@ -1,0 +1,150 @@
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"main.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.main,"ax",%progbits
+  20              		.align	1
+  21              		.global	main
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	main:
+  27              	.LFB133:
+  28              		.file 1 "Core/src/main.c"
+   1:Core/src/main.c **** #include <stdio.h>
+   2:Core/src/main.c **** #include <stdint.h>
+   3:Core/src/main.c **** #include "stm32f4xx.h"
+   4:Core/src/main.c **** #include "led.h"
+   5:Core/src/main.c **** 
+   6:Core/src/main.c **** int main(void)
+   7:Core/src/main.c **** {
+  29              		.loc 1 7 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33 0000 08B5     		push	{r3, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 8
+  36              		.cfi_offset 3, -8
+  37              		.cfi_offset 14, -4
+   8:Core/src/main.c ****     LED_init();
+  38              		.loc 1 8 5 view .LVU1
+  39 0002 FFF7FEFF 		bl	LED_init
+  40              	.LVL0:
+  41 0006 0BE0     		b	.L6
+  42              	.LVL1:
+  43              	.L3:
+  44              	.LBB2:
+   9:Core/src/main.c **** 
+  10:Core/src/main.c ****     while (1)
+  11:Core/src/main.c ****     {    
+  12:Core/src/main.c ****         /* Toggle LED */
+  13:Core/src/main.c **** 		LED_on();
+  14:Core/src/main.c **** 		for (uint32_t i = 0; i < 1000000; i++) {}
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s 			page 2
+
+
+  45              		.loc 1 14 43 discriminator 3 view .LVU2
+  46              		.loc 1 14 37 discriminator 3 view .LVU3
+  47              		.loc 1 14 38 is_stmt 0 discriminator 3 view .LVU4
+  48 0008 0133     		adds	r3, r3, #1
+  49              	.LVL2:
+  50              	.L2:
+  51              		.loc 1 14 24 is_stmt 1 discriminator 1 view .LVU5
+  52              		.loc 1 14 3 is_stmt 0 discriminator 1 view .LVU6
+  53 000a 074A     		ldr	r2, .L8
+  54 000c 9342     		cmp	r3, r2
+  55 000e FBD9     		bls	.L3
+  56              	.LBE2:
+  15:Core/src/main.c **** 
+  16:Core/src/main.c ****         LED_off();
+  57              		.loc 1 16 9 is_stmt 1 view .LVU7
+  58 0010 FFF7FEFF 		bl	LED_off
+  59              	.LVL3:
+  17:Core/src/main.c **** 		for (uint32_t i = 0; i < 1000000; i++) {}
+  60              		.loc 1 17 3 view .LVU8
+  61              	.LBB3:
+  62              		.loc 1 17 8 view .LVU9
+  63              		.loc 1 17 17 is_stmt 0 view .LVU10
+  64 0014 0023     		movs	r3, #0
+  65              		.loc 1 17 3 view .LVU11
+  66 0016 00E0     		b	.L4
+  67              	.LVL4:
+  68              	.L5:
+  69              		.loc 1 17 43 is_stmt 1 discriminator 3 view .LVU12
+  70              		.loc 1 17 37 discriminator 3 view .LVU13
+  71              		.loc 1 17 38 is_stmt 0 discriminator 3 view .LVU14
+  72 0018 0133     		adds	r3, r3, #1
+  73              	.LVL5:
+  74              	.L4:
+  75              		.loc 1 17 24 is_stmt 1 discriminator 1 view .LVU15
+  76              		.loc 1 17 3 is_stmt 0 discriminator 1 view .LVU16
+  77 001a 034A     		ldr	r2, .L8
+  78 001c 9342     		cmp	r3, r2
+  79 001e FBD9     		bls	.L5
+  80              	.LVL6:
+  81              	.L6:
+  82              		.loc 1 17 3 discriminator 1 view .LVU17
+  83              	.LBE3:
+  10:Core/src/main.c ****     {    
+  84              		.loc 1 10 5 is_stmt 1 view .LVU18
+  13:Core/src/main.c **** 		for (uint32_t i = 0; i < 1000000; i++) {}
+  85              		.loc 1 13 3 view .LVU19
+  86 0020 FFF7FEFF 		bl	LED_on
+  87              	.LVL7:
+  14:Core/src/main.c **** 
+  88              		.loc 1 14 3 view .LVU20
+  89              	.LBB4:
+  14:Core/src/main.c **** 
+  90              		.loc 1 14 8 view .LVU21
+  14:Core/src/main.c **** 
+  91              		.loc 1 14 17 is_stmt 0 view .LVU22
+  92 0024 0023     		movs	r3, #0
+  14:Core/src/main.c **** 
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s 			page 3
+
+
+  93              		.loc 1 14 3 view .LVU23
+  94 0026 F0E7     		b	.L2
+  95              	.L9:
+  96              		.align	2
+  97              	.L8:
+  98 0028 3F420F00 		.word	999999
+  99              	.LBE4:
+ 100              		.cfi_endproc
+ 101              	.LFE133:
+ 103              		.text
+ 104              	.Letext0:
+ 105              		.file 2 "c:\\st\\stm32cubeclt\\gnu-tools-for-stm32\\arm-none-eabi\\include\\machine\\_default_type
+ 106              		.file 3 "c:\\st\\stm32cubeclt\\gnu-tools-for-stm32\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 107              		.file 4 "Core/include/led.h"
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 main.c
+C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s:20     .text.main:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s:26     .text.main:0000000000000000 main
+C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s:98     .text.main:0000000000000028 $d
+
+UNDEFINED SYMBOLS
+LED_init
+LED_off
+LED_on

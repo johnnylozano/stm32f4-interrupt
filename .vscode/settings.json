@@ -1,0 +1,20 @@
+{
+    "cortex-debug.gdbPath": "C:/gcc-arm-none-eabi/bin/arm-none-eabi-gdb",
+    "cortex-debug.openocdPath": "C:/openocd/bin/openocd",
+    "files.associations": {
+        "stm32f4xx.h": "c"
+    },
+    "actionButtons": {
+        "defaultColor": "white",
+        "commands": [
+            {
+                "name": "Build",
+                "command": "make"
+            },
+            {
+                "name": "Clean",
+                "command": "make clean"
+            }
+        ]
+    }
+}
