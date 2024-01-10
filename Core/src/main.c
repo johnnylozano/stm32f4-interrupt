@@ -14,7 +14,7 @@ int main(void)
         for (uint32_t i = 0; i < 1000000; i++) {}
 
         LED_off();
-		for (uint32_t i = 0; i < 1000000; i++) {}
+        for (uint32_t i = 0; i < 1000000; i++) {}
     }
 
     return 0;
