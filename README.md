@@ -1,6 +1,6 @@
-# STM32 F411RE NUCLEO Template for VSCode
+# STM32 F411RE NUCLEO Bare Metal Template for VSCode
 
-This template provides configurations for compiling and debugging STM32 F411RE NUCLEO projects in Visual Studio Code on Windows OS.
+This template is designed for bare metal programming on the STM32 F411RE NUCLEO board using Visual Studio Code on Windows OS. It is set up for developers who prefer to work directly with the hardware without the abstraction of HAL (Hardware Abstraction Layer).
 
 ---
 
