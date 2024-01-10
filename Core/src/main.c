@@ -10,8 +10,8 @@ int main(void)
     while (1)
     {    
         /* Toggle LED */
-		LED_on();
-		for (uint32_t i = 0; i < 1000000; i++) {}
+        LED_on();
+        for (uint32_t i = 0; i < 1000000; i++) {}
 
         LED_off();
 		for (uint32_t i = 0; i < 1000000; i++) {}
