@@ -6,7 +6,7 @@
 
 #define GPIOAEN		(1U<<0)
 #define PIN5		(1U<<5)
-#define LED		    PIN5
+#define LED         PIN5
 
 static void exti_callback(void);
 
