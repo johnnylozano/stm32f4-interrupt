@@ -1,0 +1,663 @@
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"uart.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.compute_uart_bd,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	compute_uart_bd:
+  26              	.LVL0:
+  27              	.LFB136:
+  28              		.file 1 "Core/src/uart.c"
+   1:Core/src/uart.c **** #include "uart.h"
+   2:Core/src/uart.c **** 
+   3:Core/src/uart.c **** #define GPIOAEN			(1U << 0)
+   4:Core/src/uart.c **** #define UART2EN			(1U << 17)
+   5:Core/src/uart.c **** 
+   6:Core/src/uart.c **** #define CR1_RE			(1U << 2)
+   7:Core/src/uart.c **** #define CR1_TE			(1U << 3)
+   8:Core/src/uart.c **** #define CR1_UE			(1U << 13)
+   9:Core/src/uart.c **** 
+  10:Core/src/uart.c **** #define SR_RXNE			(1U << 5)
+  11:Core/src/uart.c **** #define SR_TXE			(1U << 7)
+  12:Core/src/uart.c **** 
+  13:Core/src/uart.c **** #define SYS_FREQ		16000000
+  14:Core/src/uart.c **** #define APB1_CLK		SYS_FREQ
+  15:Core/src/uart.c **** 
+  16:Core/src/uart.c **** #define UART_BAUDRATE	115200
+  17:Core/src/uart.c **** 
+  18:Core/src/uart.c **** static void uart_set_baudrate(USART_TypeDef *USARTx, uint32_t PeriphClk, uint32_t BaudRate);
+  19:Core/src/uart.c **** static uint16_t compute_uart_bd(uint32_t PeriphClk, uint32_t BaudRate);
+  20:Core/src/uart.c **** 
+  21:Core/src/uart.c **** void uart2_write(int ch);
+  22:Core/src/uart.c **** 
+  23:Core/src/uart.c **** int __io_putchar(int ch)
+  24:Core/src/uart.c **** {
+  25:Core/src/uart.c **** 	uart2_write(ch);
+  26:Core/src/uart.c **** 	return ch;
+  27:Core/src/uart.c **** }
+  28:Core/src/uart.c **** 
+  29:Core/src/uart.c **** void uart2_rxtx_init(void)
+  30:Core/src/uart.c **** {
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s 			page 2
+
+
+  31:Core/src/uart.c **** 	/*************** Configure uart gpio pin ****************/
+  32:Core/src/uart.c **** 	/* Enable clock access to gpioa */
+  33:Core/src/uart.c **** 	RCC->AHB1ENR |= GPIOAEN;
+  34:Core/src/uart.c **** 
+  35:Core/src/uart.c **** 	/* Set PA2 mode to alternate function mode */
+  36:Core/src/uart.c **** 	GPIOA->MODER &=~ (1U<<4);
+  37:Core/src/uart.c **** 	GPIOA->MODER |= (1U<<5);
+  38:Core/src/uart.c **** 
+  39:Core/src/uart.c **** 	/* Set PA2 alternate function type to UART_TX (AF07) */
+  40:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 8);	// AFR[0] is for all AFRL; AFR[1] is for all AFRH
+  41:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 9);
+  42:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 10);
+  43:Core/src/uart.c **** 	GPIOA->AFR[0] &= ~(1U << 11);
+  44:Core/src/uart.c **** 
+  45:Core/src/uart.c **** 	/* Set PA3 mode to alternate function mode */
+  46:Core/src/uart.c **** 	GPIOA->MODER &=~ (1U << 6);
+  47:Core/src/uart.c **** 	GPIOA->MODER |= (1U << 7);
+  48:Core/src/uart.c **** 
+  49:Core/src/uart.c **** 	/* Set PA3 alternate function type to UART_RX (AF07) */
+  50:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 12);
+  51:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 13);
+  52:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 14);
+  53:Core/src/uart.c **** 	GPIOA->AFR[0] &= ~(1U << 15);
+  54:Core/src/uart.c **** 
+  55:Core/src/uart.c **** 	/*************** Configure uart module ******************/
+  56:Core/src/uart.c **** 	/* Enable clock access to uart2 */
+  57:Core/src/uart.c **** 	RCC->APB1ENR |= UART2EN;
+  58:Core/src/uart.c **** 
+  59:Core/src/uart.c **** 	/* Configure baudrate */
+  60:Core/src/uart.c **** 	uart_set_baudrate(USART2, APB1_CLK, UART_BAUDRATE);
+  61:Core/src/uart.c **** 
+  62:Core/src/uart.c **** 	/* Configure the transfer direction */
+  63:Core/src/uart.c **** 	USART2->CR1 = (CR1_TE | CR1_RE); // '=' is deliberate to clear all other bits to default mode
+  64:Core/src/uart.c **** 
+  65:Core/src/uart.c **** 	/* Enable uart module */
+  66:Core/src/uart.c **** 	USART2->CR1 |= CR1_UE;
+  67:Core/src/uart.c **** }
+  68:Core/src/uart.c **** 
+  69:Core/src/uart.c **** char uart2_read(void)
+  70:Core/src/uart.c **** {
+  71:Core/src/uart.c **** 	/* Make sure the receive data register is not empty */
+  72:Core/src/uart.c **** 	while(!(USART2->SR & SR_RXNE)){}
+  73:Core/src/uart.c **** 
+  74:Core/src/uart.c **** 	/* Read data */
+  75:Core/src/uart.c **** 	return USART2->DR;
+  76:Core/src/uart.c **** }
+  77:Core/src/uart.c **** 
+  78:Core/src/uart.c **** void uart2_tx_init(void)
+  79:Core/src/uart.c **** {
+  80:Core/src/uart.c **** 	/*************** Configure uart gpio pin ****************/
+  81:Core/src/uart.c **** 	/* Enable clock access to gpioa */
+  82:Core/src/uart.c **** 	RCC->AHB1ENR |= GPIOAEN;
+  83:Core/src/uart.c **** 
+  84:Core/src/uart.c **** 	/* Set PA2 mode to alternate function mode */
+  85:Core/src/uart.c **** 	GPIOA->MODER &=~ (1U << 4);
+  86:Core/src/uart.c **** 	GPIOA->MODER |= (1U << 5);
+  87:Core/src/uart.c **** 
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s 			page 3
+
+
+  88:Core/src/uart.c **** 	/* Set PA2 alternate function type to UART_TX (AF07) */
+  89:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 8);	// AFR[0] is for all AFRL; AFR[1] is for all AFRH
+  90:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 9);
+  91:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 10);
+  92:Core/src/uart.c **** 	GPIOA->AFR[0] &= ~(1U << 11);
+  93:Core/src/uart.c **** 
+  94:Core/src/uart.c **** 	/*************** Configure uart module ******************/
+  95:Core/src/uart.c **** 	/* Enable clock access to uart2 */
+  96:Core/src/uart.c **** 	RCC->APB1ENR |= UART2EN;
+  97:Core/src/uart.c **** 
+  98:Core/src/uart.c **** 	/* Configure baudrate */
+  99:Core/src/uart.c **** 	uart_set_baudrate(USART2, APB1_CLK, UART_BAUDRATE);
+ 100:Core/src/uart.c **** 
+ 101:Core/src/uart.c **** 	/* Configure the transfer direction */
+ 102:Core/src/uart.c **** 	USART2->CR1 = CR1_TE; // '=' is deliberate to clear all other bits to default mode
+ 103:Core/src/uart.c **** 
+ 104:Core/src/uart.c **** 	/* Enable uart module */
+ 105:Core/src/uart.c **** 	USART2->CR1 |= CR1_UE;
+ 106:Core/src/uart.c **** }
+ 107:Core/src/uart.c **** 
+ 108:Core/src/uart.c **** void uart2_write(int ch)
+ 109:Core/src/uart.c **** {
+ 110:Core/src/uart.c **** 	/* Make sure the transmit data register is empty */
+ 111:Core/src/uart.c **** 	while(!(USART2->SR & SR_TXE)){}
+ 112:Core/src/uart.c **** 
+ 113:Core/src/uart.c **** 	/* Write to transmit data register */
+ 114:Core/src/uart.c **** 	USART2->DR = (ch & 0xFF);
+ 115:Core/src/uart.c **** }
+ 116:Core/src/uart.c **** 
+ 117:Core/src/uart.c **** 
+ 118:Core/src/uart.c **** 
+ 119:Core/src/uart.c **** 
+ 120:Core/src/uart.c **** static void uart_set_baudrate(USART_TypeDef *USARTx, uint32_t PeriphClk, uint32_t BaudRate)
+ 121:Core/src/uart.c **** {
+ 122:Core/src/uart.c **** 	USARTx->BRR = compute_uart_bd(PeriphClk, BaudRate);
+ 123:Core/src/uart.c **** }
+ 124:Core/src/uart.c **** 
+ 125:Core/src/uart.c **** static uint16_t compute_uart_bd(uint32_t PeriphClk, uint32_t BaudRate)
+ 126:Core/src/uart.c **** {
+  29              		.loc 1 126 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+ 127:Core/src/uart.c **** 	return ((PeriphClk + (BaudRate / 2U)) / BaudRate);
+  34              		.loc 1 127 2 view .LVU1
+  35              		.loc 1 127 21 is_stmt 0 view .LVU2
+  36 0000 00EB5100 		add	r0, r0, r1, lsr #1
+  37              	.LVL1:
+  38              		.loc 1 127 40 view .LVU3
+  39 0004 B0FBF1F0 		udiv	r0, r0, r1
+ 128:Core/src/uart.c **** }
+  40              		.loc 1 128 1 view .LVU4
+  41 0008 80B2     		uxth	r0, r0
+  42 000a 7047     		bx	lr
+  43              		.cfi_endproc
+  44              	.LFE136:
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s 			page 4
+
+
+  46              		.section	.text.uart_set_baudrate,"ax",%progbits
+  47              		.align	1
+  48              		.syntax unified
+  49              		.thumb
+  50              		.thumb_func
+  52              	uart_set_baudrate:
+  53              	.LVL2:
+  54              	.LFB135:
+ 121:Core/src/uart.c **** 	USARTx->BRR = compute_uart_bd(PeriphClk, BaudRate);
+  55              		.loc 1 121 1 is_stmt 1 view -0
+  56              		.cfi_startproc
+  57              		@ args = 0, pretend = 0, frame = 0
+  58              		@ frame_needed = 0, uses_anonymous_args = 0
+ 121:Core/src/uart.c **** 	USARTx->BRR = compute_uart_bd(PeriphClk, BaudRate);
+  59              		.loc 1 121 1 is_stmt 0 view .LVU6
+  60 0000 10B5     		push	{r4, lr}
+  61              	.LCFI0:
+  62              		.cfi_def_cfa_offset 8
+  63              		.cfi_offset 4, -8
+  64              		.cfi_offset 14, -4
+  65 0002 0446     		mov	r4, r0
+  66 0004 0846     		mov	r0, r1
+  67              	.LVL3:
+ 122:Core/src/uart.c **** }
+  68              		.loc 1 122 2 is_stmt 1 view .LVU7
+ 122:Core/src/uart.c **** }
+  69              		.loc 1 122 16 is_stmt 0 view .LVU8
+  70 0006 1146     		mov	r1, r2
+  71              	.LVL4:
+ 122:Core/src/uart.c **** }
+  72              		.loc 1 122 16 view .LVU9
+  73 0008 FFF7FEFF 		bl	compute_uart_bd
+  74              	.LVL5:
+ 122:Core/src/uart.c **** }
+  75              		.loc 1 122 14 view .LVU10
+  76 000c A060     		str	r0, [r4, #8]
+ 123:Core/src/uart.c **** 
+  77              		.loc 1 123 1 view .LVU11
+  78 000e 10BD     		pop	{r4, pc}
+ 123:Core/src/uart.c **** 
+  79              		.loc 1 123 1 view .LVU12
+  80              		.cfi_endproc
+  81              	.LFE135:
+  83              		.section	.text.uart2_rxtx_init,"ax",%progbits
+  84              		.align	1
+  85              		.global	uart2_rxtx_init
+  86              		.syntax unified
+  87              		.thumb
+  88              		.thumb_func
+  90              	uart2_rxtx_init:
+  91              	.LFB131:
+  30:Core/src/uart.c **** 	/*************** Configure uart gpio pin ****************/
+  92              		.loc 1 30 1 is_stmt 1 view -0
+  93              		.cfi_startproc
+  94              		@ args = 0, pretend = 0, frame = 0
+  95              		@ frame_needed = 0, uses_anonymous_args = 0
+  96 0000 10B5     		push	{r4, lr}
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s 			page 5
+
+
+  97              	.LCFI1:
+  98              		.cfi_def_cfa_offset 8
+  99              		.cfi_offset 4, -8
+ 100              		.cfi_offset 14, -4
+  33:Core/src/uart.c **** 
+ 101              		.loc 1 33 2 view .LVU14
+  33:Core/src/uart.c **** 
+ 102              		.loc 1 33 15 is_stmt 0 view .LVU15
+ 103 0002 244A     		ldr	r2, .L6
+ 104 0004 136B     		ldr	r3, [r2, #48]
+ 105 0006 43F00103 		orr	r3, r3, #1
+ 106 000a 1363     		str	r3, [r2, #48]
+  36:Core/src/uart.c **** 	GPIOA->MODER |= (1U<<5);
+ 107              		.loc 1 36 2 is_stmt 1 view .LVU16
+  36:Core/src/uart.c **** 	GPIOA->MODER |= (1U<<5);
+ 108              		.loc 1 36 15 is_stmt 0 view .LVU17
+ 109 000c 224B     		ldr	r3, .L6+4
+ 110 000e 1968     		ldr	r1, [r3]
+ 111 0010 21F01001 		bic	r1, r1, #16
+ 112 0014 1960     		str	r1, [r3]
+  37:Core/src/uart.c **** 
+ 113              		.loc 1 37 2 is_stmt 1 view .LVU18
+  37:Core/src/uart.c **** 
+ 114              		.loc 1 37 15 is_stmt 0 view .LVU19
+ 115 0016 1968     		ldr	r1, [r3]
+ 116 0018 41F02001 		orr	r1, r1, #32
+ 117 001c 1960     		str	r1, [r3]
+  40:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 9);
+ 118              		.loc 1 40 2 is_stmt 1 view .LVU20
+  40:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 9);
+ 119              		.loc 1 40 16 is_stmt 0 view .LVU21
+ 120 001e 196A     		ldr	r1, [r3, #32]
+ 121 0020 41F48071 		orr	r1, r1, #256
+ 122 0024 1962     		str	r1, [r3, #32]
+  41:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 10);
+ 123              		.loc 1 41 2 is_stmt 1 view .LVU22
+  41:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 10);
+ 124              		.loc 1 41 16 is_stmt 0 view .LVU23
+ 125 0026 196A     		ldr	r1, [r3, #32]
+ 126 0028 41F40071 		orr	r1, r1, #512
+ 127 002c 1962     		str	r1, [r3, #32]
+  42:Core/src/uart.c **** 	GPIOA->AFR[0] &= ~(1U << 11);
+ 128              		.loc 1 42 2 is_stmt 1 view .LVU24
+  42:Core/src/uart.c **** 	GPIOA->AFR[0] &= ~(1U << 11);
+ 129              		.loc 1 42 16 is_stmt 0 view .LVU25
+ 130 002e 196A     		ldr	r1, [r3, #32]
+ 131 0030 41F48061 		orr	r1, r1, #1024
+ 132 0034 1962     		str	r1, [r3, #32]
+  43:Core/src/uart.c **** 
+ 133              		.loc 1 43 2 is_stmt 1 view .LVU26
+  43:Core/src/uart.c **** 
+ 134              		.loc 1 43 16 is_stmt 0 view .LVU27
+ 135 0036 196A     		ldr	r1, [r3, #32]
+ 136 0038 21F40061 		bic	r1, r1, #2048
+ 137 003c 1962     		str	r1, [r3, #32]
+  46:Core/src/uart.c **** 	GPIOA->MODER |= (1U << 7);
+ 138              		.loc 1 46 2 is_stmt 1 view .LVU28
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s 			page 6
+
+
+  46:Core/src/uart.c **** 	GPIOA->MODER |= (1U << 7);
+ 139              		.loc 1 46 15 is_stmt 0 view .LVU29
+ 140 003e 1968     		ldr	r1, [r3]
+ 141 0040 21F04001 		bic	r1, r1, #64
+ 142 0044 1960     		str	r1, [r3]
+  47:Core/src/uart.c **** 
+ 143              		.loc 1 47 2 is_stmt 1 view .LVU30
+  47:Core/src/uart.c **** 
+ 144              		.loc 1 47 15 is_stmt 0 view .LVU31
+ 145 0046 1968     		ldr	r1, [r3]
+ 146 0048 41F08001 		orr	r1, r1, #128
+ 147 004c 1960     		str	r1, [r3]
+  50:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 13);
+ 148              		.loc 1 50 2 is_stmt 1 view .LVU32
+  50:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 13);
+ 149              		.loc 1 50 16 is_stmt 0 view .LVU33
+ 150 004e 196A     		ldr	r1, [r3, #32]
+ 151 0050 41F48051 		orr	r1, r1, #4096
+ 152 0054 1962     		str	r1, [r3, #32]
+  51:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 14);
+ 153              		.loc 1 51 2 is_stmt 1 view .LVU34
+  51:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 14);
+ 154              		.loc 1 51 16 is_stmt 0 view .LVU35
+ 155 0056 196A     		ldr	r1, [r3, #32]
+ 156 0058 41F40051 		orr	r1, r1, #8192
+ 157 005c 1962     		str	r1, [r3, #32]
+  52:Core/src/uart.c **** 	GPIOA->AFR[0] &= ~(1U << 15);
+ 158              		.loc 1 52 2 is_stmt 1 view .LVU36
+  52:Core/src/uart.c **** 	GPIOA->AFR[0] &= ~(1U << 15);
+ 159              		.loc 1 52 16 is_stmt 0 view .LVU37
+ 160 005e 196A     		ldr	r1, [r3, #32]
+ 161 0060 41F48041 		orr	r1, r1, #16384
+ 162 0064 1962     		str	r1, [r3, #32]
+  53:Core/src/uart.c **** 
+ 163              		.loc 1 53 2 is_stmt 1 view .LVU38
+  53:Core/src/uart.c **** 
+ 164              		.loc 1 53 16 is_stmt 0 view .LVU39
+ 165 0066 196A     		ldr	r1, [r3, #32]
+ 166 0068 21F40041 		bic	r1, r1, #32768
+ 167 006c 1962     		str	r1, [r3, #32]
+  57:Core/src/uart.c **** 
+ 168              		.loc 1 57 2 is_stmt 1 view .LVU40
+  57:Core/src/uart.c **** 
+ 169              		.loc 1 57 15 is_stmt 0 view .LVU41
+ 170 006e 136C     		ldr	r3, [r2, #64]
+ 171 0070 43F40033 		orr	r3, r3, #131072
+ 172 0074 1364     		str	r3, [r2, #64]
+  60:Core/src/uart.c **** 
+ 173              		.loc 1 60 2 is_stmt 1 view .LVU42
+ 174 0076 094C     		ldr	r4, .L6+8
+ 175 0078 4FF4E132 		mov	r2, #115200
+ 176 007c 0849     		ldr	r1, .L6+12
+ 177 007e 2046     		mov	r0, r4
+ 178 0080 FFF7FEFF 		bl	uart_set_baudrate
+ 179              	.LVL6:
+  63:Core/src/uart.c **** 
+ 180              		.loc 1 63 2 view .LVU43
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s 			page 7
+
+
+  63:Core/src/uart.c **** 
+ 181              		.loc 1 63 14 is_stmt 0 view .LVU44
+ 182 0084 0C23     		movs	r3, #12
+ 183 0086 E360     		str	r3, [r4, #12]
+  66:Core/src/uart.c **** }
+ 184              		.loc 1 66 2 is_stmt 1 view .LVU45
+  66:Core/src/uart.c **** }
+ 185              		.loc 1 66 14 is_stmt 0 view .LVU46
+ 186 0088 E368     		ldr	r3, [r4, #12]
+ 187 008a 43F40053 		orr	r3, r3, #8192
+ 188 008e E360     		str	r3, [r4, #12]
+  67:Core/src/uart.c **** 
+ 189              		.loc 1 67 1 view .LVU47
+ 190 0090 10BD     		pop	{r4, pc}
+ 191              	.L7:
+ 192 0092 00BF     		.align	2
+ 193              	.L6:
+ 194 0094 00380240 		.word	1073887232
+ 195 0098 00000240 		.word	1073872896
+ 196 009c 00440040 		.word	1073759232
+ 197 00a0 0024F400 		.word	16000000
+ 198              		.cfi_endproc
+ 199              	.LFE131:
+ 201              		.section	.text.uart2_read,"ax",%progbits
+ 202              		.align	1
+ 203              		.global	uart2_read
+ 204              		.syntax unified
+ 205              		.thumb
+ 206              		.thumb_func
+ 208              	uart2_read:
+ 209              	.LFB132:
+  70:Core/src/uart.c **** 	/* Make sure the receive data register is not empty */
+ 210              		.loc 1 70 1 is_stmt 1 view -0
+ 211              		.cfi_startproc
+ 212              		@ args = 0, pretend = 0, frame = 0
+ 213              		@ frame_needed = 0, uses_anonymous_args = 0
+ 214              		@ link register save eliminated.
+ 215              	.L9:
+  72:Core/src/uart.c **** 
+ 216              		.loc 1 72 33 discriminator 1 view .LVU49
+  72:Core/src/uart.c **** 
+ 217              		.loc 1 72 7 discriminator 1 view .LVU50
+  72:Core/src/uart.c **** 
+ 218              		.loc 1 72 16 is_stmt 0 discriminator 1 view .LVU51
+ 219 0000 044B     		ldr	r3, .L10
+ 220 0002 1B68     		ldr	r3, [r3]
+  72:Core/src/uart.c **** 
+ 221              		.loc 1 72 7 discriminator 1 view .LVU52
+ 222 0004 13F0200F 		tst	r3, #32
+ 223 0008 FAD0     		beq	.L9
+  75:Core/src/uart.c **** }
+ 224              		.loc 1 75 2 is_stmt 1 view .LVU53
+  75:Core/src/uart.c **** }
+ 225              		.loc 1 75 15 is_stmt 0 view .LVU54
+ 226 000a 024B     		ldr	r3, .L10
+ 227 000c 5868     		ldr	r0, [r3, #4]
+  76:Core/src/uart.c **** 
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s 			page 8
+
+
+ 228              		.loc 1 76 1 view .LVU55
+ 229 000e C0B2     		uxtb	r0, r0
+ 230 0010 7047     		bx	lr
+ 231              	.L11:
+ 232 0012 00BF     		.align	2
+ 233              	.L10:
+ 234 0014 00440040 		.word	1073759232
+ 235              		.cfi_endproc
+ 236              	.LFE132:
+ 238              		.section	.text.uart2_tx_init,"ax",%progbits
+ 239              		.align	1
+ 240              		.global	uart2_tx_init
+ 241              		.syntax unified
+ 242              		.thumb
+ 243              		.thumb_func
+ 245              	uart2_tx_init:
+ 246              	.LFB133:
+  79:Core/src/uart.c **** 	/*************** Configure uart gpio pin ****************/
+ 247              		.loc 1 79 1 is_stmt 1 view -0
+ 248              		.cfi_startproc
+ 249              		@ args = 0, pretend = 0, frame = 0
+ 250              		@ frame_needed = 0, uses_anonymous_args = 0
+ 251 0000 10B5     		push	{r4, lr}
+ 252              	.LCFI2:
+ 253              		.cfi_def_cfa_offset 8
+ 254              		.cfi_offset 4, -8
+ 255              		.cfi_offset 14, -4
+  82:Core/src/uart.c **** 
+ 256              		.loc 1 82 2 view .LVU57
+  82:Core/src/uart.c **** 
+ 257              		.loc 1 82 15 is_stmt 0 view .LVU58
+ 258 0002 184A     		ldr	r2, .L14
+ 259 0004 136B     		ldr	r3, [r2, #48]
+ 260 0006 43F00103 		orr	r3, r3, #1
+ 261 000a 1363     		str	r3, [r2, #48]
+  85:Core/src/uart.c **** 	GPIOA->MODER |= (1U << 5);
+ 262              		.loc 1 85 2 is_stmt 1 view .LVU59
+  85:Core/src/uart.c **** 	GPIOA->MODER |= (1U << 5);
+ 263              		.loc 1 85 15 is_stmt 0 view .LVU60
+ 264 000c 164B     		ldr	r3, .L14+4
+ 265 000e 1968     		ldr	r1, [r3]
+ 266 0010 21F01001 		bic	r1, r1, #16
+ 267 0014 1960     		str	r1, [r3]
+  86:Core/src/uart.c **** 
+ 268              		.loc 1 86 2 is_stmt 1 view .LVU61
+  86:Core/src/uart.c **** 
+ 269              		.loc 1 86 15 is_stmt 0 view .LVU62
+ 270 0016 1968     		ldr	r1, [r3]
+ 271 0018 41F02001 		orr	r1, r1, #32
+ 272 001c 1960     		str	r1, [r3]
+  89:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 9);
+ 273              		.loc 1 89 2 is_stmt 1 view .LVU63
+  89:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 9);
+ 274              		.loc 1 89 16 is_stmt 0 view .LVU64
+ 275 001e 196A     		ldr	r1, [r3, #32]
+ 276 0020 41F48071 		orr	r1, r1, #256
+ 277 0024 1962     		str	r1, [r3, #32]
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s 			page 9
+
+
+  90:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 10);
+ 278              		.loc 1 90 2 is_stmt 1 view .LVU65
+  90:Core/src/uart.c **** 	GPIOA->AFR[0] |= (1U << 10);
+ 279              		.loc 1 90 16 is_stmt 0 view .LVU66
+ 280 0026 196A     		ldr	r1, [r3, #32]
+ 281 0028 41F40071 		orr	r1, r1, #512
+ 282 002c 1962     		str	r1, [r3, #32]
+  91:Core/src/uart.c **** 	GPIOA->AFR[0] &= ~(1U << 11);
+ 283              		.loc 1 91 2 is_stmt 1 view .LVU67
+  91:Core/src/uart.c **** 	GPIOA->AFR[0] &= ~(1U << 11);
+ 284              		.loc 1 91 16 is_stmt 0 view .LVU68
+ 285 002e 196A     		ldr	r1, [r3, #32]
+ 286 0030 41F48061 		orr	r1, r1, #1024
+ 287 0034 1962     		str	r1, [r3, #32]
+  92:Core/src/uart.c **** 
+ 288              		.loc 1 92 2 is_stmt 1 view .LVU69
+  92:Core/src/uart.c **** 
+ 289              		.loc 1 92 16 is_stmt 0 view .LVU70
+ 290 0036 196A     		ldr	r1, [r3, #32]
+ 291 0038 21F40061 		bic	r1, r1, #2048
+ 292 003c 1962     		str	r1, [r3, #32]
+  96:Core/src/uart.c **** 
+ 293              		.loc 1 96 2 is_stmt 1 view .LVU71
+  96:Core/src/uart.c **** 
+ 294              		.loc 1 96 15 is_stmt 0 view .LVU72
+ 295 003e 136C     		ldr	r3, [r2, #64]
+ 296 0040 43F40033 		orr	r3, r3, #131072
+ 297 0044 1364     		str	r3, [r2, #64]
+  99:Core/src/uart.c **** 
+ 298              		.loc 1 99 2 is_stmt 1 view .LVU73
+ 299 0046 094C     		ldr	r4, .L14+8
+ 300 0048 4FF4E132 		mov	r2, #115200
+ 301 004c 0849     		ldr	r1, .L14+12
+ 302 004e 2046     		mov	r0, r4
+ 303 0050 FFF7FEFF 		bl	uart_set_baudrate
+ 304              	.LVL7:
+ 102:Core/src/uart.c **** 
+ 305              		.loc 1 102 2 view .LVU74
+ 102:Core/src/uart.c **** 
+ 306              		.loc 1 102 14 is_stmt 0 view .LVU75
+ 307 0054 0823     		movs	r3, #8
+ 308 0056 E360     		str	r3, [r4, #12]
+ 105:Core/src/uart.c **** }
+ 309              		.loc 1 105 2 is_stmt 1 view .LVU76
+ 105:Core/src/uart.c **** }
+ 310              		.loc 1 105 14 is_stmt 0 view .LVU77
+ 311 0058 E368     		ldr	r3, [r4, #12]
+ 312 005a 43F40053 		orr	r3, r3, #8192
+ 313 005e E360     		str	r3, [r4, #12]
+ 106:Core/src/uart.c **** 
+ 314              		.loc 1 106 1 view .LVU78
+ 315 0060 10BD     		pop	{r4, pc}
+ 316              	.L15:
+ 317 0062 00BF     		.align	2
+ 318              	.L14:
+ 319 0064 00380240 		.word	1073887232
+ 320 0068 00000240 		.word	1073872896
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s 			page 10
+
+
+ 321 006c 00440040 		.word	1073759232
+ 322 0070 0024F400 		.word	16000000
+ 323              		.cfi_endproc
+ 324              	.LFE133:
+ 326              		.section	.text.uart2_write,"ax",%progbits
+ 327              		.align	1
+ 328              		.global	uart2_write
+ 329              		.syntax unified
+ 330              		.thumb
+ 331              		.thumb_func
+ 333              	uart2_write:
+ 334              	.LFB134:
+ 109:Core/src/uart.c **** 	/* Make sure the transmit data register is empty */
+ 335              		.loc 1 109 1 is_stmt 1 view -0
+ 336              		.cfi_startproc
+ 337              		@ args = 0, pretend = 0, frame = 0
+ 338              		@ frame_needed = 0, uses_anonymous_args = 0
+ 339              		@ link register save eliminated.
+ 340              	.LVL8:
+ 341              	.L17:
+ 111:Core/src/uart.c **** 
+ 342              		.loc 1 111 32 discriminator 1 view .LVU80
+ 111:Core/src/uart.c **** 
+ 343              		.loc 1 111 7 discriminator 1 view .LVU81
+ 111:Core/src/uart.c **** 
+ 344              		.loc 1 111 16 is_stmt 0 discriminator 1 view .LVU82
+ 345 0000 044B     		ldr	r3, .L18
+ 346 0002 1B68     		ldr	r3, [r3]
+ 111:Core/src/uart.c **** 
+ 347              		.loc 1 111 7 discriminator 1 view .LVU83
+ 348 0004 13F0800F 		tst	r3, #128
+ 349 0008 FAD0     		beq	.L17
+ 114:Core/src/uart.c **** }
+ 350              		.loc 1 114 2 is_stmt 1 view .LVU84
+ 114:Core/src/uart.c **** }
+ 351              		.loc 1 114 19 is_stmt 0 view .LVU85
+ 352 000a C0B2     		uxtb	r0, r0
+ 353              	.LVL9:
+ 114:Core/src/uart.c **** }
+ 354              		.loc 1 114 13 view .LVU86
+ 355 000c 014B     		ldr	r3, .L18
+ 356 000e 5860     		str	r0, [r3, #4]
+ 115:Core/src/uart.c **** 
+ 357              		.loc 1 115 1 view .LVU87
+ 358 0010 7047     		bx	lr
+ 359              	.L19:
+ 360 0012 00BF     		.align	2
+ 361              	.L18:
+ 362 0014 00440040 		.word	1073759232
+ 363              		.cfi_endproc
+ 364              	.LFE134:
+ 366              		.section	.text.__io_putchar,"ax",%progbits
+ 367              		.align	1
+ 368              		.global	__io_putchar
+ 369              		.syntax unified
+ 370              		.thumb
+ 371              		.thumb_func
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s 			page 11
+
+
+ 373              	__io_putchar:
+ 374              	.LVL10:
+ 375              	.LFB130:
+  24:Core/src/uart.c **** 	uart2_write(ch);
+ 376              		.loc 1 24 1 is_stmt 1 view -0
+ 377              		.cfi_startproc
+ 378              		@ args = 0, pretend = 0, frame = 0
+ 379              		@ frame_needed = 0, uses_anonymous_args = 0
+  24:Core/src/uart.c **** 	uart2_write(ch);
+ 380              		.loc 1 24 1 is_stmt 0 view .LVU89
+ 381 0000 10B5     		push	{r4, lr}
+ 382              	.LCFI3:
+ 383              		.cfi_def_cfa_offset 8
+ 384              		.cfi_offset 4, -8
+ 385              		.cfi_offset 14, -4
+ 386 0002 0446     		mov	r4, r0
+  25:Core/src/uart.c **** 	return ch;
+ 387              		.loc 1 25 2 is_stmt 1 view .LVU90
+ 388 0004 FFF7FEFF 		bl	uart2_write
+ 389              	.LVL11:
+  26:Core/src/uart.c **** }
+ 390              		.loc 1 26 2 view .LVU91
+  27:Core/src/uart.c **** 
+ 391              		.loc 1 27 1 is_stmt 0 view .LVU92
+ 392 0008 2046     		mov	r0, r4
+ 393 000a 10BD     		pop	{r4, pc}
+  27:Core/src/uart.c **** 
+ 394              		.loc 1 27 1 view .LVU93
+ 395              		.cfi_endproc
+ 396              	.LFE130:
+ 398              		.text
+ 399              	.Letext0:
+ 400              		.file 2 "c:\\st\\stm32cubeclt\\gnu-tools-for-stm32\\arm-none-eabi\\include\\machine\\_default_type
+ 401              		.file 3 "c:\\st\\stm32cubeclt\\gnu-tools-for-stm32\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 402              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f411xe.h"
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s 			page 12
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 uart.c
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:20     .text.compute_uart_bd:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:25     .text.compute_uart_bd:0000000000000000 compute_uart_bd
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:47     .text.uart_set_baudrate:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:52     .text.uart_set_baudrate:0000000000000000 uart_set_baudrate
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:84     .text.uart2_rxtx_init:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:90     .text.uart2_rxtx_init:0000000000000000 uart2_rxtx_init
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:194    .text.uart2_rxtx_init:0000000000000094 $d
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:202    .text.uart2_read:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:208    .text.uart2_read:0000000000000000 uart2_read
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:234    .text.uart2_read:0000000000000014 $d
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:239    .text.uart2_tx_init:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:245    .text.uart2_tx_init:0000000000000000 uart2_tx_init
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:319    .text.uart2_tx_init:0000000000000064 $d
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:327    .text.uart2_write:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:333    .text.uart2_write:0000000000000000 uart2_write
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:362    .text.uart2_write:0000000000000014 $d
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:367    .text.__io_putchar:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\cc0vTp3H.s:373    .text.__io_putchar:0000000000000000 __io_putchar
+
+NO UNDEFINED SYMBOLS

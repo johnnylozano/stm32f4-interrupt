@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s 			page 1
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -19,132 +19,249 @@ ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s 			page 1
   16              		.text
   17              	.Ltext0:
   18              		.cfi_sections	.debug_frame
-  19              		.section	.text.main,"ax",%progbits
-  20              		.align	1
-  21              		.global	main
-  22              		.syntax unified
-  23              		.thumb
-  24              		.thumb_func
-  26              	main:
-  27              	.LFB133:
-  28              		.file 1 "Core/src/main.c"
+  19              		.section	.rodata.exti_callback.str1.4,"aMS",%progbits,1
+  20              		.align	2
+  21              	.LC0:
+  22 0000 42544E20 		.ascii	"BTN Pressed...\012\015\000"
+  22      50726573 
+  22      7365642E 
+  22      2E2E0A0D 
+  22      00
+  23              		.section	.text.exti_callback,"ax",%progbits
+  24              		.align	1
+  25              		.syntax unified
+  26              		.thumb
+  27              		.thumb_func
+  29              	exti_callback:
+  30              	.LFB134:
+  31              		.file 1 "Core/src/main.c"
    1:Core/src/main.c **** #include <stdio.h>
    2:Core/src/main.c **** #include <stdint.h>
    3:Core/src/main.c **** #include "stm32f4xx.h"
-   4:Core/src/main.c **** #include "led.h"
-   5:Core/src/main.c **** 
-   6:Core/src/main.c **** int main(void)
-   7:Core/src/main.c **** {
-  29              		.loc 1 7 1 view -0
-  30              		.cfi_startproc
-  31              		@ args = 0, pretend = 0, frame = 0
-  32              		@ frame_needed = 0, uses_anonymous_args = 0
-  33 0000 08B5     		push	{r3, lr}
-  34              	.LCFI0:
-  35              		.cfi_def_cfa_offset 8
-  36              		.cfi_offset 3, -8
-  37              		.cfi_offset 14, -4
-   8:Core/src/main.c ****     LED_init();
-  38              		.loc 1 8 5 view .LVU1
-  39 0002 FFF7FEFF 		bl	LED_init
-  40              	.LVL0:
-  41 0006 0BE0     		b	.L6
-  42              	.LVL1:
-  43              	.L3:
-  44              	.LBB2:
-   9:Core/src/main.c **** 
-  10:Core/src/main.c ****     while (1)
-  11:Core/src/main.c ****     {    
-  12:Core/src/main.c ****         /* Toggle LED */
-  13:Core/src/main.c **** 		LED_on();
-  14:Core/src/main.c **** 		for (uint32_t i = 0; i < 1000000; i++) {}
-ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s 			page 2
-
-
-  45              		.loc 1 14 43 discriminator 3 view .LVU2
-  46              		.loc 1 14 37 discriminator 3 view .LVU3
-  47              		.loc 1 14 38 is_stmt 0 discriminator 3 view .LVU4
-  48 0008 0133     		adds	r3, r3, #1
-  49              	.LVL2:
-  50              	.L2:
-  51              		.loc 1 14 24 is_stmt 1 discriminator 1 view .LVU5
-  52              		.loc 1 14 3 is_stmt 0 discriminator 1 view .LVU6
-  53 000a 074A     		ldr	r2, .L8
-  54 000c 9342     		cmp	r3, r2
-  55 000e FBD9     		bls	.L3
-  56              	.LBE2:
+   4:Core/src/main.c **** #include "uart.h"
+   5:Core/src/main.c **** #include "exti.h"
+   6:Core/src/main.c **** 
+   7:Core/src/main.c **** #define GPIOAEN		(1U<<0)
+   8:Core/src/main.c **** #define PIN5		(1U<<5)
+   9:Core/src/main.c **** #define LED		    PIN5
+  10:Core/src/main.c **** 
+  11:Core/src/main.c **** static void exti_callback(void);
+  12:Core/src/main.c **** 
+  13:Core/src/main.c **** int main(void)
+  14:Core/src/main.c **** {
   15:Core/src/main.c **** 
-  16:Core/src/main.c ****         LED_off();
-  57              		.loc 1 16 9 is_stmt 1 view .LVU7
-  58 0010 FFF7FEFF 		bl	LED_off
-  59              	.LVL3:
-  17:Core/src/main.c **** 		for (uint32_t i = 0; i < 1000000; i++) {}
-  60              		.loc 1 17 3 view .LVU8
-  61              	.LBB3:
-  62              		.loc 1 17 8 view .LVU9
-  63              		.loc 1 17 17 is_stmt 0 view .LVU10
-  64 0014 0023     		movs	r3, #0
-  65              		.loc 1 17 3 view .LVU11
-  66 0016 00E0     		b	.L4
-  67              	.LVL4:
-  68              	.L5:
-  69              		.loc 1 17 43 is_stmt 1 discriminator 3 view .LVU12
-  70              		.loc 1 17 37 discriminator 3 view .LVU13
-  71              		.loc 1 17 38 is_stmt 0 discriminator 3 view .LVU14
-  72 0018 0133     		adds	r3, r3, #1
-  73              	.LVL5:
-  74              	.L4:
-  75              		.loc 1 17 24 is_stmt 1 discriminator 1 view .LVU15
-  76              		.loc 1 17 3 is_stmt 0 discriminator 1 view .LVU16
-  77 001a 034A     		ldr	r2, .L8
-  78 001c 9342     		cmp	r3, r2
-  79 001e FBD9     		bls	.L5
-  80              	.LVL6:
-  81              	.L6:
-  82              		.loc 1 17 3 discriminator 1 view .LVU17
-  83              	.LBE3:
-  10:Core/src/main.c ****     {    
-  84              		.loc 1 10 5 is_stmt 1 view .LVU18
-  13:Core/src/main.c **** 		for (uint32_t i = 0; i < 1000000; i++) {}
-  85              		.loc 1 13 3 view .LVU19
-  86 0020 FFF7FEFF 		bl	LED_on
-  87              	.LVL7:
-  14:Core/src/main.c **** 
-  88              		.loc 1 14 3 view .LVU20
-  89              	.LBB4:
-  14:Core/src/main.c **** 
-  90              		.loc 1 14 8 view .LVU21
-  14:Core/src/main.c **** 
-  91              		.loc 1 14 17 is_stmt 0 view .LVU22
-  92 0024 0023     		movs	r3, #0
-  14:Core/src/main.c **** 
-ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s 			page 3
+  16:Core/src/main.c ****     /* Enable clock access to GPIOA */
+  17:Core/src/main.c ****     RCC->AHB1ENR |= GPIOAEN;
+  18:Core/src/main.c **** 
+  19:Core/src/main.c ****     /* Set GPIOA as an output */
+  20:Core/src/main.c ****     GPIOA->MODER |= (1U<<10);
+  21:Core/src/main.c ****     GPIOA->MODER &=~(1U<<11);
+  22:Core/src/main.c **** 
+  23:Core/src/main.c ****     pc13_exti_init();
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s 			page 2
 
 
-  93              		.loc 1 14 3 view .LVU23
-  94 0026 F0E7     		b	.L2
-  95              	.L9:
-  96              		.align	2
-  97              	.L8:
-  98 0028 3F420F00 		.word	999999
-  99              	.LBE4:
- 100              		.cfi_endproc
- 101              	.LFE133:
- 103              		.text
- 104              	.Letext0:
- 105              		.file 2 "c:\\st\\stm32cubeclt\\gnu-tools-for-stm32\\arm-none-eabi\\include\\machine\\_default_type
- 106              		.file 3 "c:\\st\\stm32cubeclt\\gnu-tools-for-stm32\\arm-none-eabi\\include\\sys\\_stdint.h"
- 107              		.file 4 "Core/include/led.h"
-ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s 			page 4
+  24:Core/src/main.c ****     uart2_tx_init();
+  25:Core/src/main.c **** 
+  26:Core/src/main.c ****     while (1)
+  27:Core/src/main.c ****     {    
+  28:Core/src/main.c ****         
+  29:Core/src/main.c ****     }
+  30:Core/src/main.c **** 
+  31:Core/src/main.c ****     return 0;
+  32:Core/src/main.c **** }
+  33:Core/src/main.c **** 
+  34:Core/src/main.c **** static void exti_callback(void)
+  35:Core/src/main.c **** {
+  32              		.loc 1 35 1 view -0
+  33              		.cfi_startproc
+  34              		@ args = 0, pretend = 0, frame = 0
+  35              		@ frame_needed = 0, uses_anonymous_args = 0
+  36 0000 08B5     		push	{r3, lr}
+  37              	.LCFI0:
+  38              		.cfi_def_cfa_offset 8
+  39              		.cfi_offset 3, -8
+  40              		.cfi_offset 14, -4
+  36:Core/src/main.c ****     printf("BTN Pressed...\n\r");
+  41              		.loc 1 36 5 view .LVU1
+  42 0002 0448     		ldr	r0, .L3
+  43 0004 FFF7FEFF 		bl	printf
+  44              	.LVL0:
+  37:Core/src/main.c ****     GPIOA->ODR ^= LED;
+  45              		.loc 1 37 5 view .LVU2
+  46              		.loc 1 37 16 is_stmt 0 view .LVU3
+  47 0008 034A     		ldr	r2, .L3+4
+  48 000a 5369     		ldr	r3, [r2, #20]
+  49 000c 83F02003 		eor	r3, r3, #32
+  50 0010 5361     		str	r3, [r2, #20]
+  38:Core/src/main.c **** }
+  51              		.loc 1 38 1 view .LVU4
+  52 0012 08BD     		pop	{r3, pc}
+  53              	.L4:
+  54              		.align	2
+  55              	.L3:
+  56 0014 00000000 		.word	.LC0
+  57 0018 00000240 		.word	1073872896
+  58              		.cfi_endproc
+  59              	.LFE134:
+  61              		.section	.text.main,"ax",%progbits
+  62              		.align	1
+  63              		.global	main
+  64              		.syntax unified
+  65              		.thumb
+  66              		.thumb_func
+  68              	main:
+  69              	.LFB133:
+  14:Core/src/main.c **** 
+  70              		.loc 1 14 1 is_stmt 1 view -0
+  71              		.cfi_startproc
+  72              		@ Volatile: function does not return.
+  73              		@ args = 0, pretend = 0, frame = 0
+  74              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s 			page 3
+
+
+  75 0000 08B5     		push	{r3, lr}
+  76              	.LCFI1:
+  77              		.cfi_def_cfa_offset 8
+  78              		.cfi_offset 3, -8
+  79              		.cfi_offset 14, -4
+  17:Core/src/main.c **** 
+  80              		.loc 1 17 5 view .LVU6
+  17:Core/src/main.c **** 
+  81              		.loc 1 17 18 is_stmt 0 view .LVU7
+  82 0002 094A     		ldr	r2, .L8
+  83 0004 136B     		ldr	r3, [r2, #48]
+  84 0006 43F00103 		orr	r3, r3, #1
+  85 000a 1363     		str	r3, [r2, #48]
+  20:Core/src/main.c ****     GPIOA->MODER &=~(1U<<11);
+  86              		.loc 1 20 5 is_stmt 1 view .LVU8
+  20:Core/src/main.c ****     GPIOA->MODER &=~(1U<<11);
+  87              		.loc 1 20 18 is_stmt 0 view .LVU9
+  88 000c 074B     		ldr	r3, .L8+4
+  89 000e 1A68     		ldr	r2, [r3]
+  90 0010 42F48062 		orr	r2, r2, #1024
+  91 0014 1A60     		str	r2, [r3]
+  21:Core/src/main.c **** 
+  92              		.loc 1 21 5 is_stmt 1 view .LVU10
+  21:Core/src/main.c **** 
+  93              		.loc 1 21 18 is_stmt 0 view .LVU11
+  94 0016 1A68     		ldr	r2, [r3]
+  95 0018 22F40062 		bic	r2, r2, #2048
+  96 001c 1A60     		str	r2, [r3]
+  23:Core/src/main.c ****     uart2_tx_init();
+  97              		.loc 1 23 5 is_stmt 1 view .LVU12
+  98 001e FFF7FEFF 		bl	pc13_exti_init
+  99              	.LVL1:
+  24:Core/src/main.c **** 
+ 100              		.loc 1 24 5 view .LVU13
+ 101 0022 FFF7FEFF 		bl	uart2_tx_init
+ 102              	.LVL2:
+ 103              	.L6:
+  26:Core/src/main.c ****     {    
+ 104              		.loc 1 26 5 discriminator 1 view .LVU14
+  29:Core/src/main.c **** 
+ 105              		.loc 1 29 5 discriminator 1 view .LVU15
+  26:Core/src/main.c ****     {    
+ 106              		.loc 1 26 11 discriminator 1 view .LVU16
+ 107 0026 FEE7     		b	.L6
+ 108              	.L9:
+ 109              		.align	2
+ 110              	.L8:
+ 111 0028 00380240 		.word	1073887232
+ 112 002c 00000240 		.word	1073872896
+ 113              		.cfi_endproc
+ 114              	.LFE133:
+ 116              		.section	.text.EXTI15_10_IRQHandler,"ax",%progbits
+ 117              		.align	1
+ 118              		.global	EXTI15_10_IRQHandler
+ 119              		.syntax unified
+ 120              		.thumb
+ 121              		.thumb_func
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s 			page 4
+
+
+ 123              	EXTI15_10_IRQHandler:
+ 124              	.LFB135:
+  39:Core/src/main.c **** 
+  40:Core/src/main.c **** void EXTI15_10_IRQHandler(void)
+  41:Core/src/main.c **** {
+ 125              		.loc 1 41 1 view -0
+ 126              		.cfi_startproc
+ 127              		@ args = 0, pretend = 0, frame = 0
+ 128              		@ frame_needed = 0, uses_anonymous_args = 0
+ 129 0000 08B5     		push	{r3, lr}
+ 130              	.LCFI2:
+ 131              		.cfi_def_cfa_offset 8
+ 132              		.cfi_offset 3, -8
+ 133              		.cfi_offset 14, -4
+  42:Core/src/main.c ****     if((EXTI->PR & LINE13) != 0)
+ 134              		.loc 1 42 5 view .LVU18
+ 135              		.loc 1 42 13 is_stmt 0 view .LVU19
+ 136 0002 074B     		ldr	r3, .L14
+ 137 0004 5B69     		ldr	r3, [r3, #20]
+ 138              		.loc 1 42 7 view .LVU20
+ 139 0006 13F4005F 		tst	r3, #8192
+ 140 000a 00D1     		bne	.L13
+ 141              	.L10:
+  43:Core/src/main.c ****     {
+  44:Core/src/main.c ****         /* Clear PR flag */
+  45:Core/src/main.c ****         EXTI->PR |= LINE13;
+  46:Core/src/main.c **** 
+  47:Core/src/main.c ****         exti_callback();
+  48:Core/src/main.c ****     }
+  49:Core/src/main.c **** }...
+ 142              		.loc 1 49 1 view .LVU21
+ 143 000c 08BD     		pop	{r3, pc}
+ 144              	.L13:
+  45:Core/src/main.c ****         EXTI->PR |= LINE13;
+ 145              		.loc 1 45 9 is_stmt 1 view .LVU22
+  45:Core/src/main.c ****         EXTI->PR |= LINE13;
+ 146              		.loc 1 45 18 is_stmt 0 view .LVU23
+ 147 000e 044A     		ldr	r2, .L14
+ 148 0010 5369     		ldr	r3, [r2, #20]
+ 149 0012 43F40053 		orr	r3, r3, #8192
+ 150 0016 5361     		str	r3, [r2, #20]
+  47:Core/src/main.c ****         exti_callback();
+ 151              		.loc 1 47 9 is_stmt 1 view .LVU24
+ 152 0018 FFF7FEFF 		bl	exti_callback
+ 153              	.LVL3:
+ 154              		.loc 1 49 1 is_stmt 0 view .LVU25
+ 155 001c F6E7     		b	.L10
+ 156              	.L15:
+ 157 001e 00BF     		.align	2
+ 158              	.L14:
+ 159 0020 003C0140 		.word	1073822720
+ 160              		.cfi_endproc
+ 161              	.LFE135:
+ 163              		.text
+ 164              	.Letext0:
+ 165              		.file 2 "c:\\st\\stm32cubeclt\\gnu-tools-for-stm32\\arm-none-eabi\\include\\machine\\_default_type
+ 166              		.file 3 "c:\\st\\stm32cubeclt\\gnu-tools-for-stm32\\arm-none-eabi\\include\\sys\\_stdint.h"
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s 			page 5
+
+
+ 167              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f411xe.h"
+ 168              		.file 5 "Core/include/uart.h"
+ 169              		.file 6 "Core/include/exti.h"
+ 170              		.file 7 "c:\\st\\stm32cubeclt\\gnu-tools-for-stm32\\arm-none-eabi\\include\\stdio.h"
+ARM GAS  C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s 			page 6
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 main.c
-C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s:20     .text.main:0000000000000000 $t
-C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s:26     .text.main:0000000000000000 main
-C:\Users\NITROU~1\AppData\Local\Temp\ccGb9SL7.s:98     .text.main:0000000000000028 $d
+C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s:20     .rodata.exti_callback.str1.4:0000000000000000 $d
+C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s:24     .text.exti_callback:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s:29     .text.exti_callback:0000000000000000 exti_callback
+C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s:56     .text.exti_callback:0000000000000014 $d
+C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s:62     .text.main:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s:68     .text.main:0000000000000000 main
+C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s:111    .text.main:0000000000000028 $d
+C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s:117    .text.EXTI15_10_IRQHandler:0000000000000000 $t
+C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s:123    .text.EXTI15_10_IRQHandler:0000000000000000 EXTI15_10_IRQHandler
+C:\Users\NITROU~1\AppData\Local\Temp\ccz61O8a.s:159    .text.EXTI15_10_IRQHandler:0000000000000020 $d
 
 UNDEFINED SYMBOLS
-LED_init
-LED_off
-LED_on
+printf
+pc13_exti_init
+uart2_tx_init

@@ -1,66 +1,35 @@
-# STM32 F411RE NUCLEO Bare Metal Template for VSCode
+# STM32 Nucleo Interrupt Driven LED-UART Demo
 
-This template is designed for bare metal programming on the STM32 F411RE NUCLEO board using Visual Studio Code on Windows OS. It is set up for developers who prefer to work directly with the hardware without the abstraction of HAL (Hardware Abstraction Layer).
+This project showcases how to use an external interrupt with an STM32 microcontroller to trigger a UART transmission. When the Nucleo board's button is pressed, an interrupt is generated, turning on the user LED and sending a "Button Pressed" message through UART.
 
 ---
 
-## Download Requirements
+## Project Structure
 
-- **OpenOCD** (tested with v0.11.0-5-win32-x64): Used for on-chip debugging, in-system programming, and boundary-scan testing. [Download here](#).
-- **gcc-arm-none-eabi** (tested with v10.3.2021.10-win32): ARM GCC toolchain for embedded projects. [Download here](#).
-- **Make**: A build automation tool. Ensure it's added to your system PATH. [Download here](#).
+- **`main.c`**: Contains the main program logic, including the initialization of the external interrupt (EXTI) and UART, and an infinite loop where the microcontroller waits for an interrupt.
+- **`uart.c`**: Manages UART initialization and functions for transmitting data.
+- **`exti.c`**: Handles the external interrupt initialization and its callback function.
 
-## VSCode Extensions Needed
+## Requirements
 
-- **C/C++ by Microsoft**: Provides IntelliSense, debugging, and code browsing.
-- **Cortex-Debug by marus25**: Enhances debugging support for ARM Cortex-M microcontrollers.
-- **Makefile Tools by Microsoft**: Provides features for working with Makefiles.
+- STM32F4 Nucleo microcontroller
+- Serial terminal (like PuTTY or Realterm) for UART communication
+- USB connecting cable
 
-## VSCode Configurations
+## How it Works
 
-- **c_cpp_properties.json**: Configure the path to your compiler.
-   ```json
-   {
-       "configurations": [
-           ...
-           "compilerPath": "Path to gcc-arm-none-eabi.exe"
-           // Example: "compilerPath": "C:\\gcc-arm-none-eabi\\bin\\arm-none-eabi-gcc.exe"
-       ]
-   }
-    ```
+- The `pc13_exti_init()` function configures the PC13 pin (user button) to trigger an interrupt on a falling edge (button press).
+- The `uart2_tx_init()` function sets up UART2 for communication.
+- When the button is pressed, the `EXTI15_10_IRQHandler` function is called, which in turn calls `exti_callback()`.
+- In `exti_callback()`, the LED state is toggled, and a message is printed to UART.
 
- - **launch.json**: Configure the debugger paths.
-   ```json
-   {
-       "version": "0.2.0",
-       "configurations": [
-           {
-               "name": "Debug Microcontroller",
-               "type": "cortex-debug",
-               "request": "launch",
-               "servertype": "openocd",
-               "cwd": "${workspaceRoot}",
-               "executable": "./build/your_executable.elf",
-               "device": "STM32F411RE",
-               "configFiles": [
-                   "interface/stlink.cfg",
-                   "target/stm32f4x.cfg"
-               ],
-               "preLaunchTask": "build",
-               "gdbPath": "Path to arm-none-eabi-gdb",
-               "openOcdPath": "Path to OpenOCD"
-               // Example:
-               // "gdbPath": "C:/gcc-arm-none-eabi/bin/arm-none-eabi-gdb",
-               // "openOcdPath": "C:/openocd/bin/openocd"
-           }
-       ]
-   }
+## Demo
 
+### Serial Monitor Output
 
-## Getting Started
+![Serial Monitor Output](demo/serial-monitor.gif)
 
-Todo
+### Project Video Demonstration
 
-## Troubleshooting
+[Project Video Demonstration](demo/video.mp4)
 
-Todo

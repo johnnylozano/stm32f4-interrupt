@@ -4,7 +4,8 @@
             "name": "STM32F411xE",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/Drivers/CMSIS/Device/ST/STM32F4xx/Include/**"
+                "${workspaceFolder}/Drivers/CMSIS/Device/ST/STM32F4xx/Include/**",
+                "${workspaceFolder}/Core/include/**"
             ],
             "defines": [
                 "_DEBUG",
